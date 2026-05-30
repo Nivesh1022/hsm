@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Doctor Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f766e, #115e59);
+            min-height: 100vh;
+            font-family: "Segoe UI", sans-serif;
+        }
+
+        .main-card {
+            background: #ffffff;
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 1000px;
+            margin: 40px auto;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+        }
+
+        .navbar-custom {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.3);
+        }
+
+        .section-box {
+            background: #f8fafc;
+            border-radius: 16px;
+            padding: 20px;
+            margin-bottom: 30px;
+            border-left: 6px solid #0d9488;
+        }
+
+        .section-title {
+            font-size: 20px;
+            font-weight: 600;
+            color: #0d9488;
+        }
+
+        .table thead {
+            background: #ccfbf1;
+        }
+
+        .btn-primary-custom {
+            background: linear-gradient(135deg, #0d9488, #0f766e);
+            border: none;
+            color: white;
+            font-weight: 600;
+        }
+
+        .modal-content {
+            border-radius: 20px;
+        }
+    </style>
+</head>
+
+<body>
+
+<!-- NAVBAR -->
+<nav class="navbar navbar-dark navbar-custom px-4">
+    <span class="navbar-brand fs-4 fw-bold">Doctor Dashboard</span>
+    <a href="/logout" class="btn btn-outline-light">Logout</a>
+</nav>
+
+<!-- MAIN CARD -->
+<div class="main-card">
+
+    <!-- DOCTOR NAME -->
+    <div class="alert text-center text-white" style="background:#0d9488; border-radius:12px;">
+        <h3 class="m-0">Welcome, Dr. {{ doctor.name }}</h3>
+    </div>
+
+    <!-- UPCOMING APPOINTMENTS -->
+    <div class="section-box">
+        <div class="section-title mb-2">Upcoming Appointments</div>
+
+        {% if upcoming_appointments %}
+        <div class="table-responsive">
+            <table class="table table-bordered shadow-sm">
+                <thead>
+                    <tr>
+                        <th>Patient</th>
+                        <th>Date</th>
+                        <th>Time</th>
+                        <th>Status</th>
+                        <th width="220">Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for a in upcoming_appointments %}
+                    <tr>
+                        <td>{{ a.patient.name }}</td>
+                        <td>{{ a.date.strftime('%Y-%m-%d') }}</td>
+                        <td>{{ a.time.strftime('%H:%M') }}</td>
+                        <td><span class="badge bg-info">{{ a.status }}</span></td>
+                        <td>
+                            {% if a.status != "Completed" %}
+                            <form action="/update_appointment_status/{{ a.id }}" method="POST" class="d-inline">
+                                <input type="hidden" name="status" value="Completed">
+                                <button class="btn btn-success btn-sm me-2">Mark Completed</button>
+                            </form>
+                            {% endif %}
+                            {% if a.status != "Cancelled" %}
+                            <a href="/cancel_appointment/{{ a.id }}" class="btn btn-danger btn-sm">Cancel</a>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p class="text-muted">No upcoming appointments</p>
+        {% endif %}
+    </div>
+
+    <!-- AVAILABILITY -->
+    <div class="section-box">
+        <div class="section-title mb-2">Add Weekly Availability</div>
+
+        <form action="/add_availability" method="POST" class="row g-3">
+
+            <div class="col-md-4">
+                <label class="form-label">Day</label>
+                <select name="day" class="form-control" required>
+                    <option value="">Select Day</option>
+                    <option>Monday</option><option>Tuesday</option><option>Wednesday</option>
+                    <option>Thursday</option><option>Friday</option><option>Saturday</option>
+                </select>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">Start Time</label>
+                <input type="time" name="start_time" class="form-control" required>
+            </div>
+
+            <div class="col-md-4">
+                <label class="form-label">End Time</label>
+                <input type="time" name="end_time" class="form-control" required>
+            </div>
+
+            <div class="col-md-12">
+                <button class="btn btn-primary-custom w-100">Add Availability</button>
+            </div>
+        </form>
+
+        <hr>
+
+        <div class="section-title">Your Availability</div>
+
+        {% if availability %}
+        <table class="table table-bordered mt-2">
+            <thead class="table-light">
+                <tr><th>Day</th><th>Start</th><th>End</th></tr>
+            </thead>
+            <tbody>
+                {% for a in availability %}
+                <tr>
+                    <td>{{ a.day }}</td>
+                    <td>{{ a.start_time }}</td>
+                    <td>{{ a.end_time }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No availability added</p>
+        {% endif %}
+    </div>
+
+    <!-- PATIENT TREATMENT -->
+    <div class="section-box">
+        <div class="section-title mb-2">Update Patient Treatment</div>
+
+        <button class="btn btn-primary-custom mb-3" data-bs-toggle="modal" data-bs-target="#patientModal">
+            Select Patient
+        </button>
+
+        <form action="/update_treatment" method="POST">
+            <input type="hidden" name="patient_id" id="patient_id">
+
+            <div class="mb-3">
+                <label>Patient Name</label>
+                <input type="text" id="patient_name" class="form-control" readonly required>
+            </div>
+
+            <div class="mb-3">
+                <label>Diagnosis</label>
+                <input type="text" name="diagnosis" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Treatment</label>
+                <input type="text" name="treatment" class="form-control" required>
+            </div>
+
+            <div class="mb-3">
+                <label>Prescription</label>
+                <textarea name="prescription" class="form-control" required></textarea>
+            </div>
+
+            <button class="btn btn-primary-custom w-100">Update Treatment</button>
+        </form>
+    </div>
+
+</div>
+
+<!-- PATIENT SELECT MODAL -->
+<div class="modal fade" id="patientModal">
+    <div class="modal-dialog modal-lg">
+        <div class="modal-content shadow">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Select Patient</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body">
+                <input id="searchBox" type="text" class="form-control mb-3" placeholder="Search patient">
+                <ul id="patientList" class="list-group"></ul>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    const patients = {{ patient_list | tojson | safe }};
+    const list = document.getElementById("patientList");
+    const searchBox = document.getElementById("searchBox");
+
+    function loadPatients(filter = "") {
+        list.innerHTML = "";
+        patients
+            .filter(p => p.name.toLowerCase().includes(filter.toLowerCase()))
+            .forEach(p => {
+                let li = document.createElement("li");
+                li.className = "list-group-item";
+                li.style.cursor = "pointer";
+                li.innerHTML = `<strong>${p.name}</strong><br><small>Age: ${p.age || 'N/A'}, Gender: ${p.gender || 'N/A'}</small>`;
+
+                li.onclick = () => {
+                    document.getElementById("patient_id").value = p.id;
+                    document.getElementById("patient_name").value = p.name;
+                    bootstrap.Modal.getInstance(document.getElementById("patientModal")).hide();
+                };
+                list.appendChild(li);
+            });
+    }
+
+    searchBox.addEventListener("input", () => loadPatients(searchBox.value));
+    loadPatients();
+</script>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

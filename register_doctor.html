@@ -1,0 +1,119 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta-name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Register Doctor</title>
+
+    <style>
+        body {
+            margin: 0;
+            padding: 0;
+            background: linear-gradient(135deg, #47A0FF, #3CC9B0);
+            font-family: 'Poppins', sans-serif;
+        }
+
+        .wrapper {
+            width: 450px;
+            margin: 60px auto;
+            background: #ffffff;
+            padding: 35px;
+            border-radius: 15px;
+            box-shadow: 0px 5px 25px rgba(0,0,0,0.15);
+        }
+
+        h2 {
+            text-align: center;
+            color: #222;
+            margin-bottom: 25px;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+        }
+
+        label {
+            font-weight: 600;
+            color: #444;
+            font-size: 14px;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            margin-top: 6px;
+            margin-bottom: 18px;
+            border: 1px solid #c7c7c7;
+            border-radius: 8px;
+            font-size: 15px;
+            font-family: inherit;
+            transition: 0.2s;
+        }
+
+        input:focus, textarea:focus {
+            border-color: #47A0FF;
+            outline: none;
+            box-shadow: 0px 0px 4px rgba(71,160,255,0.6);
+        }
+
+        button {
+            width: 100%;
+            padding: 14px;
+            background: #47A0FF;
+            border: none;
+            color: white;
+            font-size: 17px;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        button:hover {
+            background: #318BE0;
+        }
+
+        .back {
+            text-align: center;
+            margin-top: 18px;
+        }
+
+        .back a {
+            text-decoration: none;
+            font-weight: 600;
+            color: #1257B0;
+        }
+
+        .back a:hover {
+            text-decoration: underline;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="wrapper">
+        <h2>Doctor Registration</h2>
+
+        <form action="/register_doctor" method="POST">
+
+            <label>Doctor Name</label>
+            <input type="text" name="name" placeholder="Enter doctor name" required>
+
+            <label>Specialization</label>
+            <input type="text" name="specialization" placeholder="Cardiology, Ortho, Neuro…" required>
+
+            <label>Availability</label>
+            <textarea name="availability" rows="3" placeholder="Mon–Fri, 9 AM to 5 PM" required></textarea>
+
+            <label>Password</label>
+            <input type="password" name="password" placeholder="Set login password" required>
+
+            <button type="submit">Register Doctor</button>
+        </form>
+
+        <div class="back">
+            <a href="{{ url_for('home') }}">← Back to Home</a>
+        </div>
+    </div>
+
+</body>
+</html>

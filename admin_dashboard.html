@@ -1,0 +1,317 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin Dashboard | HMS</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        /* Full Page Background */
+        body {
+            background: linear-gradient(135deg, #0b5345, #004d40);
+            min-height: 100vh;
+            font-family: 'Segoe UI', sans-serif;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 30px;
+        }
+
+        /* Main Card */
+        .main-card {
+            width: 100%;
+            max-width: 1100px;
+            background: white;
+            border-radius: 22px;
+            overflow: hidden;
+            box-shadow: 0 10px 25px rgba(0,0,0,0.25);
+        }
+
+        /* Card header gradient like login page */
+        .header-gradient {
+            background: linear-gradient(135deg, #00c6ff, #00b894);
+            color: white;
+            text-align: center;
+            padding: 35px 15px;
+        }
+
+        .header-gradient h2 {
+            font-weight: 700;
+            margin: 0;
+        }
+
+        .header-gradient p {
+            margin: 5px 0 0;
+            opacity: 0.9;
+        }
+
+        /* Section padding */
+        .content-section {
+            padding: 25px 35px;
+        }
+
+        /* Stats cards */
+        .stat-card {
+            border-radius: 16px;
+            padding: 20px;
+            color: white;
+            font-weight: bold;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+        }
+
+        .bg-doctor { background: #3498db; }
+        .bg-patient { background: #2ecc71; }
+        .bg-appointment { background: #e74c3c; }
+
+        /* Tabs styling */
+        .nav-tabs .nav-link {
+            font-weight: 600;
+            border: none;
+            color: #004d40;
+            padding: 10px 18px;
+        }
+
+        .nav-tabs .nav-link.active {
+            background: #00b894;
+            color: white !important;
+            border-radius: 8px;
+        }
+
+        /* Table styling */
+        table thead {
+            background: #00b894;
+            color: white;
+        }
+
+        table {
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .card-inner {
+            background: #f8f9fc;
+            padding: 20px;
+            border-radius: 16px;
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="main-card">
+
+    <!-- HEADER -->
+    <div class="header-gradient">
+        <h2>Admin Dashboard</h2>
+        <p>Hospital Management – Control Panel</p>
+        <a href="/logout" class="btn btn-light btn-sm mt-2">Logout</a>
+    </div>
+
+    <!-- CONTENT -->
+    <div class="content-section">
+
+        <!-- Stats Row -->
+        <div class="row text-center mb-4">
+
+            <div class="col-md-4 mb-3">
+                <div class="stat-card bg-doctor">
+                    <h5>Total Doctors</h5>
+                    <h2>{{ total_doctors }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="stat-card bg-patient">
+                    <h5>Total Patients</h5>
+                    <h2>{{ total_patients }}</h2>
+                </div>
+            </div>
+
+            <div class="col-md-4 mb-3">
+                <div class="stat-card bg-appointment">
+                    <h5>Total Appointments</h5>
+                    <h2>{{ total_appointments }}</h2>
+                </div>
+            </div>
+
+        </div>
+
+        <!-- Search Bar -->
+        <form action="/admin_search" method="get" class="input-group mb-3">
+            <input type="text" name="query" class="form-control" placeholder="Search doctor or patient...">
+            <button class="btn btn-success">Search</button>
+        </form>
+
+        {% if results %}
+        <div class="alert alert-info">
+            <strong>Search Results:</strong>
+            <ul>
+                {% for r in results %}
+                    <li>{{ r }}</li>
+                {% endfor %}
+            </ul>
+        </div>
+        {% endif %}
+
+        <!-- Tabs -->
+        <ul class="nav nav-tabs mt-4" id="adminTabs">
+            <li class="nav-item">
+                <a class="nav-link active" data-bs-toggle="tab" href="#doctors">Doctors</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#patients">Patients</a>
+            </li>
+
+            <li class="nav-item">
+                <a class="nav-link" data-bs-toggle="tab" href="#appointments">Appointments</a>
+            </li>
+        </ul>
+
+        <!-- TAB CONTENT -->
+        <div class="tab-content mt-4">
+
+            <!-- DOCTORS TAB -->
+            <div class="tab-pane fade show active" id="doctors">
+                <div class="card-inner shadow">
+
+                    <h4 class="mb-3">Doctors List</h4>
+
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Specialization</th>
+                            <th>Availability</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for d in doctors %}
+                            <tr>
+                                <td>{{ d.id }}</td>
+                                <td>{{ d.name }}</td>
+                                <td>{{ d.specialization }}</td>
+                                <td>{{ d.availability }}</td>
+                                <td>
+                                    {% if d.blacklisted %}
+                                        <span class="badge bg-danger">Blacklisted</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="/edit_doctor/{{ d.id }}" class="btn btn-warning btn-sm">Edit</a>
+
+                                    {% if d.blacklisted %}
+                                        <a href="/unblacklist_doctor/{{ d.id }}" class="btn btn-primary btn-sm">Un-blacklist</a>
+                                    {% else %}
+                                        <a href="/blacklist_doctor/{{ d.id }}" class="btn btn-danger btn-sm">Blacklist</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+
+                    </table>
+
+                </div>
+            </div>
+
+            <!-- PATIENTS TAB -->
+            <div class="tab-pane fade" id="patients">
+                <div class="card-inner shadow">
+
+                    <h4 class="mb-3">Patients List</h4>
+
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Status</th>
+                            <th>Actions</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for p in patients %}
+                            <tr>
+                                <td>{{ p.id }}</td>
+                                <td>{{ p.name }}</td>
+                                <td>{{ p.email }}</td>
+                                <td>{{ p.phone }}</td>
+                                <td>
+                                    {% if p.blacklisted %}
+                                        <span class="badge bg-danger">Blacklisted</span>
+                                    {% else %}
+                                        <span class="badge bg-success">Active</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if p.blacklisted %}
+                                        <a href="/unblacklist_patient/{{ p.id }}" class="btn btn-primary btn-sm">Un-blacklist</a>
+                                    {% else %}
+                                        <a href="/blacklist_patient/{{ p.id }}" class="btn btn-danger btn-sm">Blacklist</a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+
+                    </table>
+
+                </div>
+            </div>
+
+            <!-- APPOINTMENTS TAB -->
+            <div class="tab-pane fade" id="appointments">
+                <div class="card-inner shadow">
+
+                    <h4 class="mb-3">All Appointments</h4>
+
+                    <table class="table table-bordered">
+                        <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Doctor</th>
+                            <th>Date</th>
+                            <th>Time</th>
+                            <th>Status</th>
+                        </tr>
+                        </thead>
+
+                        <tbody>
+                        {% for a in appointments %}
+                            <tr>
+                                <td>{{ a.id }}</td>
+                                <td>{{ a.patient.name }}</td>
+                                <td>{{ a.doctor.name }}</td>
+                                <td>{{ a.date }}</td>
+                                <td>{{ a.time }}</td>
+                                <td>{{ a.status }}</td>
+                            </tr>
+                        {% endfor %}
+                        </tbody>
+
+                    </table>
+                </div>
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

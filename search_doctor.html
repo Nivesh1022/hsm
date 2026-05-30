@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Search Doctor</title>
+
+    <!-- Bootstrap -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: #eef3f8;
+            font-family: Arial, sans-serif;
+        }
+        .navbar {
+            background: #0d6efd;
+        }
+        .navbar-brand, .nav-link {
+            color: white !important;
+        }
+        .card {
+            border-radius: 10px;
+        }
+        .select-btn {
+            cursor: pointer;
+        }
+    </style>
+</head>
+
+<body>
+
+    <!-- NAVBAR -->
+    <nav class="navbar navbar-expand-lg navbar-dark px-3">
+        <a class="navbar-brand" href="/">Hospital Management</a>
+
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav ms-auto">
+                <!-- Logout Button -->
+                <li class="nav-item">
+                    <a href="/logout" class="btn btn-danger ms-2">Logout</a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+    <!-- END NAVBAR -->
+
+
+    <div class="container mt-4">
+        <h2 class="text-center mb-4">Search Doctor</h2>
+
+        <!-- Search Card -->
+        <div class="card p-4 shadow-sm">
+
+            <form action="/search_doctor" method="POST">
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Specialization</strong></label>
+
+                    <div class="input-group">
+                        <input id="selectedSpecialization" name="specialization" class="form-control" placeholder="Select Specialization" readonly required>
+
+                        <!-- Button opens modal -->
+                        <button type="button" class="btn btn-primary" data-bs-toggle="modal" data-bs-target="#specializationModal">
+                            Search
+                        </button>
+                    </div>
+                </div>
+
+                <div class="mb-3">
+                    <label class="form-label"><strong>Location (Optional)</strong></label>
+                    <input type="text" name="location" class="form-control" placeholder="Enter city or area">
+                </div>
+
+                <button type="submit" class="btn btn-success w-100">Search Doctor</button>
+
+            </form>
+        </div>
+
+
+        <!-- Search Results -->
+        {% if doctors %}
+        <h3 class="mt-4">Available Doctors</h3>
+
+        <div class="row">
+            {% for d in doctors %}
+            <div class="col-md-4 mt-3">
+                <div class="card p-3 shadow">
+                    <h5>{{ d.name }}</h5>
+                    <p><strong>Specialization:</strong> {{ d.specialization }}</p>
+                    <p><strong>Experience:</strong> {{ d.experience }} years</p>
+                    <p><strong>Location:</strong> {{ d.location }}</p>
+
+                    <a href="/book_appointment/{{ d.id }}" class="btn btn-success">Book Appointment</a>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+
+    </div>
+
+
+
+    <!-- SPECIALIZATION MODAL -->
+    <div class="modal fade" id="specializationModal" tabindex="-1">
+        <div class="modal-dialog modal-dialog-scrollable">
+            <div class="modal-content">
+
+                <div class="modal-header">
+                    <h5 class="modal-title">Select Specialization</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+
+                <div class="modal-body">
+
+                    <!-- JINJA: LOOP SPECIALIZATIONS -->
+                    {% for s in specializations %}
+                        <div class="border p-2 rounded select-btn mb-2" 
+                             onclick="selectSpecialization('{{ s }}')" 
+                             style="background: #f8f9fa;">
+                            {{ s }}
+                        </div>
+                    {% endfor %}
+
+                </div>
+
+            </div>
+        </div>
+    </div>
+    <!-- END MODAL -->
+
+
+    <script>
+        function selectSpecialization(value) {
+            document.getElementById("selectedSpecialization").value = value;
+            var modal = bootstrap.Modal.getInstance(document.getElementById('specializationModal'));
+            modal.hide();
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+</body>
+</html>

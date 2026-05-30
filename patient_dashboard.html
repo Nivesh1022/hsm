@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Patient Dashboard</title>
+
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+
+    <style>
+        body {
+            background: linear-gradient(135deg, #0f5a55, #0d6b62);
+            font-family: "Poppins", sans-serif;
+            padding-top: 40px;
+        }
+
+        .main-card {
+            width: 80%;
+            margin: auto;
+            background: white;
+            border-radius: 25px;
+            box-shadow: 0 10px 35px rgba(0,0,0,0.22);
+            overflow: hidden;
+        }
+
+        .header-section {
+            background: linear-gradient(135deg, #14c2a3, #00b3c9);
+            padding: 28px;
+            color: white;
+            text-align: center;
+            border-bottom: 1px solid #e5e5e5;
+        }
+
+        .section {
+            padding: 25px 35px;
+            border-bottom: 1px solid #efefef;
+        }
+
+        .form-control {
+            border-radius: 10px;
+            height: 42px;
+        }
+
+        .btn-main {
+            background: linear-gradient(135deg, #00caaa, #00b9d2);
+            border: none;
+            border-radius: 50px;
+            color: white;
+            font-weight: 600;
+            width: 100%;
+            padding: 10px;
+        }
+
+        .sub-card {
+            background: #f8fbff;
+            padding: 18px;
+            border-radius: 12px;
+            box-shadow: 0px 2px 7px rgba(0,0,0,0.08);
+            margin-bottom: 20px;
+        }
+
+        .doctor-card {
+            padding: 15px;
+            background: #ecf7ff;
+            border-radius: 10px;
+            border-left: 5px solid #00bcd4;
+            margin-bottom: 18px;
+        }
+
+        .table {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+        }
+
+        .modal-content {
+            border-radius: 18px;
+        }
+
+        .navbar-custom {
+            background: transparent;
+            padding-left: 30px;
+        }
+
+        .logout-btn {
+            background: white;
+            padding: 6px 15px;
+            border-radius: 50px;
+            color: #0c786e;
+            font-weight: 600;
+        }
+    </style>
+</head>
+
+<body>
+
+<nav class="navbar navbar-custom">
+    <div class="container-fluid">
+        <h4 class="text-white mt-2">Patient Dashboard</h4>
+        <a href="/logout" class="logout-btn">Logout</a>
+    </div>
+</nav>
+
+<div class="main-card mt-4">
+
+    <!-- HEADER -->
+    <div class="header-section">
+        <h2>Welcome, {{ patient.name }}</h2>
+        <p>Your Health, Our Priority</p>
+    </div>
+
+    <!-- UPDATE PROFILE -->
+    <div class="section">
+        <h4 class="mb-3">Update Profile</h4>
+
+        <form method="POST" action="/update_profile">
+            <div class="row">
+
+                <div class="col-md-4">
+                    <label>Name</label>
+                    <input class="form-control" type="text" name="name" value="{{ patient.name }}" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label>Email</label>
+                    <input class="form-control" type="email" name="email" value="{{ patient.email }}" required>
+                </div>
+
+                <div class="col-md-4">
+                    <label>Contact</label>
+                    <input class="form-control" type="text" name="contact" value="{{ patient.contact }}" required>
+                </div>
+
+            </div>
+
+            <button class="btn-main mt-3">Save Changes</button>
+        </form>
+    </div>
+
+    <!-- SEARCH DOCTOR -->
+    <div class="section">
+        <h4 class="mb-3">Search Doctor</h4>
+
+        <form method="POST" action="/search_doctor">
+
+            <div class="row">
+                <div class="col-md-4">
+                    <label>Select Specialization</label>
+                    <select id="specSelect" name="specialization" class="form-control" required>
+                        <option value="">-- Select Specialization --</option>
+                        {% for sp in specializations %}
+                        <option value="{{ sp }}">{{ sp }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="col-md-4">
+                    <label>Doctor Name (optional)</label>
+                    <input type="text" id="doctorNameInput" name="doctor_name" class="form-control">
+                </div>
+
+                <div class="col-md-4 d-flex align-items-end">
+                    <button type="button" id="openModal" class="btn btn-secondary w-100">Suggest Doctors</button>
+                </div>
+            </div>
+
+            <button class="btn-main mt-3">Search</button>
+        </form>
+    </div>
+
+    <!-- SEARCH RESULTS -->
+    {% if doctors %}
+    <div class="section">
+        <h4 class="mb-3">Available Doctors</h4>
+
+        <div class="row">
+            {% for d in doctors %}
+            <div class="col-md-4">
+
+                <div class="doctor-card">
+                    <h5>{{ d.name }}</h5>
+                    <p><strong>{{ d.specialization }}</strong></p>
+
+                    <form method="POST" action="/book_appointment">
+                        <input type="hidden" name="doctor_id" value="{{ d.id }}">
+
+                        <label>Date</label>
+                        <input class="form-control" type="date" name="date" required>
+
+                        <label class="mt-2">Time</label>
+                        <input class="form-control" type="time" name="time" required>
+
+                        <button class="btn-main mt-3">Book Appointment</button>
+                    </form>
+                </div>
+
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+    {% endif %}
+
+    <!-- UPCOMING APPOINTMENTS -->
+    <div class="section">
+        <h4 class="mb-3">Upcoming Appointments</h4>
+
+        {% if upcoming %}
+        <table class="table table-bordered">
+            <thead class="table-info">
+                <tr>
+                    <th>Doctor</th>
+                    <th>Date</th>
+                    <th>Time</th>
+                    <th>Status</th>
+                </tr>
+            </thead>
+
+            <tbody>
+                {% for a in upcoming %}
+                <tr>
+                    <td>{{ a.doctor.name }}</td>
+                    <td>{{ a.date }}</td>
+                    <td>{{ a.time }}</td>
+                    <td>{{ a.status }}</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No upcoming appointments.</p>
+        {% endif %}
+    </div>
+
+    <!-- HISTORY -->
+    <div class="section">
+        <h4 class="mb-3">Past Appointments</h4>
+
+        {% if history %}
+        <table class="table table-bordered">
+            <thead class="table-light">
+            <tr>
+                <th>Doctor</th>
+                <th>Date</th>
+                <th>Status</th>
+                <th>Diagnosis</th>
+                <th>Prescription</th>
+            </tr>
+            </thead>
+
+            <tbody>
+            {% for h in history %}
+            <tr>
+                <td>{{ h.doctor.name }}</td>
+                <td>{{ h.date }}</td>
+                <td>{{ h.status }}</td>
+                <td>{{ h.treatment.diagnosis if h.treatment else "---" }}</td>
+                <td>{{ h.treatment.prescription if h.treatment else "---" }}</td>
+            </tr>
+            {% endfor %}
+            </tbody>
+        </table>
+        {% else %}
+        <p class="text-muted">No past appointments found.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+
+<!-- SUGGESTION MODAL -->
+<div class="modal fade" id="suggestModal">
+    <div class="modal-dialog">
+        <div class="modal-content">
+
+            <div class="modal-header">
+                <h5 class="modal-title">Suggested Doctors</h5>
+                <button class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+
+            <div class="modal-body" id="suggestList">
+                <p>Select a specialization first.</p>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+
+<script>
+document.getElementById("openModal").onclick = function () {
+
+    let sp = document.getElementById("specSelect").value;
+
+    if (!sp) {
+        document.getElementById("suggestList").innerHTML = "<p>Select specialization first.</p>";
+    } else {
+        fetch(`/doctor_suggestions/${sp}`)
+            .then(res => res.json())
+            .then(data => {
+                let html = "";
+                data.forEach(name => {
+                    html += `<div class="p-2 mb-1 rounded" style="background:#f1faff; cursor:pointer;" onclick="selectDoctor('${name}')">${name}</div>`;
+                });
+                document.getElementById("suggestList").innerHTML = html;
+            });
+    }
+
+    new bootstrap.Modal(document.getElementById("suggestModal")).show();
+};
+
+function selectDoctor(name) {
+    document.getElementById("doctorNameInput").value = name;
+    bootstrap.Modal.getInstance(document.getElementById("suggestModal")).hide();
+}
+</script>
+
+</body>
+</html>
